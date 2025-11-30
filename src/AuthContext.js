@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { getAPIUrl } from './utils/api';
 
 export const AuthContext = createContext();
 
@@ -80,16 +81,28 @@ export const AuthProvider = ({ children }) => {
       });
 
       // Make API call to backend server
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      // Transform data to match API documentation format
+      const requestBody = {
+        customer_name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+        phone: userData.contactMobile || '',
+        email: userData.email || '',
+        password: userData.password || '',
+        ward: address?.ward || '',
+        district: address?.district || '',
+        street: address?.street || '',
+        house_number: address?.houseNumber || '',
+        building_name: address?.buildingName || null,
+        block: address?.block || null,
+        floor: address?.floor || null,
+        room_number: address?.roomNumber || null
+      };
+
+      const response = await fetch(getAPIUrl('/api/customers/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...userData,
-          address: address
-        }),
-        credentials: 'include'
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {

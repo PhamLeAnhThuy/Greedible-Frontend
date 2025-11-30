@@ -5,6 +5,7 @@ import { useCart } from '../contexts/CartContext';
 import FoodItem from '../components/FoodItem';
 import Footer from '../components/Footer';
 import UserNav from '../components/UserNav';
+import { getAPIUrl } from '../utils/api';
 import './MenuPage.css';
 
 function MenuPage() {
@@ -87,7 +88,7 @@ function MenuPage() {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3001/api/recipes`);
+        const response = await fetch(getAPIUrl('/recipes'));
         if (!response.ok) {
           throw new Error('Failed to fetch recipes');
         }
@@ -194,7 +195,7 @@ function MenuPage() {
     setIsLoadingTrackOrders(true);
     setTrackOrderError('');
     try {
-      const response = await fetch(`http://localhost:3001/api/orders/guest/orders/${trackOrderPhone}`);
+      const response = await fetch(getAPIUrl(`/orders/guest/orders/${trackOrderPhone}`));
       if (!response.ok) throw new Error('Failed to fetch order history');
       const data = await response.json();
       if (data.success) {
@@ -373,7 +374,7 @@ function MenuPage() {
                               className="received-order-btn"
                               onClick={async () => {
                                 try {
-                                  const response = await fetch(`http://localhost:3001/api/orders/guest/complete/${order.sale_id}`, {
+                                  const response = await fetch(getAPIUrl(`/orders/guest/complete/${order.sale_id}`), {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
                                   });
@@ -441,7 +442,7 @@ function MenuPage() {
               if (!email) { showNotification('Please enter your email address.', 'error'); return; }
               try {
                 showNotification('Sending password reset link...', 'info');
-                const response = await fetch('http://localhost:3001/api/forgot-password', {
+                const response = await fetch(getAPIUrl('/customers/forgot-password'), {
                   method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ email }),
                 });
                 const data = await response.json();

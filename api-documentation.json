@@ -1,0 +1,1358 @@
+{
+  "baseUrl": "https://greedible-backend.vercel.app",
+  "authentication": {
+    "type": "Bearer Token",
+    "header": "Authorization",
+    "format": "Bearer <token>",
+    "note": "JWT token obtained from /api/customers/signin"
+  },
+  "endpoints": {
+    "customers": {
+      "register": {
+        "path": "/api/customers/register",
+        "method": "POST",
+        "description": "Register a new customer account",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["customer_name", "phone", "email", "password", "ward", "district", "street", "house_number"],
+          "optional": ["building_name", "block", "floor", "room_number"],
+          "schema": {
+            "customer_name": "string",
+            "phone": "string (10 digits)",
+            "email": "string (valid email format)",
+            "password": "string",
+            "ward": "string",
+            "district": "string",
+            "street": "string",
+            "house_number": "string",
+            "building_name": "string | null",
+            "block": "string | null",
+            "floor": "string | null",
+            "room_number": "string | null"
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer registered successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "user": {
+                "customer_id": "number",
+                "customer_name": "string",
+                "email": "string",
+                "phone": "string",
+                "loyalty_point": "number"
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (missing fields, invalid format, duplicate email/phone)"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "signin": {
+        "path": "/api/customers/signin",
+        "method": "POST",
+        "description": "Sign in customer and get JWT token",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["email", "password"],
+          "schema": {
+            "email": "string",
+            "password": "string"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sign in successful",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "token": "string (JWT)",
+              "user": {
+                "customer_id": "number",
+                "customer_name": "string",
+                "email": "string",
+                "phone": "string",
+                "loyalty_point": "number"
+              }
+            }
+          },
+          "400": {
+            "description": "Missing email or password"
+          },
+          "401": {
+            "description": "Invalid email or password"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "profile": {
+        "path": "/api/customers/profile",
+        "method": "GET",
+        "description": "Get authenticated customer profile",
+        "authentication": true,
+        "requestBody": null,
+        "responses": {
+          "200": {
+            "description": "Profile retrieved successfully",
+            "schema": {
+              "success": "boolean",
+              "user": {
+                "id": "number",
+                "firstName": "string",
+                "lastName": "string",
+                "email": "string",
+                "contactMobile": "string",
+                "loyaltyPoints": "number",
+                "address": "object | null"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "forgotPassword": {
+        "path": "/api/customers/forgot-password",
+        "method": "POST",
+        "description": "Request password reset (sends email if user exists)",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["email"],
+          "schema": {
+            "email": "string"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success (always returns success to prevent email enumeration)",
+            "schema": {
+              "success": "boolean",
+              "message": "string"
+            }
+          },
+          "400": {
+            "description": "Email is required"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "updateAddress": {
+        "path": "/api/customers/update-address",
+        "method": "PUT",
+        "description": "Update customer address",
+        "authentication": true,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["address"],
+          "schema": {
+            "address": {
+              "ward": "string",
+              "district": "string",
+              "street": "string",
+              "houseNumber": "string",
+              "buildingName": "string | null",
+              "block": "string | null",
+              "floor": "string | null",
+              "roomNumber": "string | null"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address updated successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "address": "object"
+            }
+          },
+          "400": {
+            "description": "Required address fields are missing"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "orders": {
+      "createGuestOrder": {
+        "path": "/api/orders",
+        "method": "POST",
+        "description": "Create a guest order (no authentication required). Auto-completes after 15 seconds.",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["items", "delivery_address", "delivery_distance", "delivery_charge", "guest_contact"],
+          "optional": ["payment_method"],
+          "schema": {
+            "items": [
+              {
+                "id": "number (recipe_id)",
+                "quantity": "number",
+                "price": "number"
+              }
+            ],
+            "delivery_address": "string",
+            "delivery_distance": "number",
+            "delivery_charge": "number",
+            "guest_contact": "string (phone number)",
+            "payment_method": "string (enum: cash, card, momo, default: cash)"
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Guest order created successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "orderId": "number",
+              "customerId": "number"
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getAllOrders": {
+        "path": "/api/orders",
+        "method": "GET",
+        "description": "Get all orders (staff only) with sorting options",
+        "authentication": true,
+        "queryParameters": {
+          "sortBy": "string (enum: time, total_price, default: time)",
+          "sortOrder": "string (enum: asc, desc, default: desc)"
+        },
+        "responses": {
+          "200": {
+            "description": "List of all orders",
+            "schema": {
+              "success": "boolean",
+              "orders": [
+                {
+                  "order_id": "number",
+                  "time": "string (ISO datetime)",
+                  "status": "string",
+                  "delivery_address": "string",
+                  "total_price": "number",
+                  "customer_name": "string",
+                  "phone": "string",
+                  "order_details": [
+                    {
+                      "recipe_name": "string",
+                      "quantity": "number"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "createCustomerOrder": {
+        "path": "/api/orders/create",
+        "method": "POST",
+        "description": "Create an order for authenticated customer with loyalty points support. Auto-completes after 15 seconds.",
+        "authentication": true,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["items", "delivery_address", "delivery_distance", "delivery_charge"],
+          "optional": ["payment_method", "loyalty_points_used", "loyalty_points_earned"],
+          "schema": {
+            "items": [
+              {
+                "id": "number (recipe_id)",
+                "quantity": "number",
+                "price": "number"
+              }
+            ],
+            "delivery_address": "string",
+            "delivery_distance": "number",
+            "delivery_charge": "number",
+            "payment_method": "string (enum: cash, card, momo)",
+            "loyalty_points_used": "number (default: 0)",
+            "loyalty_points_earned": "number (default: 0)"
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "orderId": "number"
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getOrderDetails": {
+        "path": "/api/orders/{id}",
+        "method": "GET",
+        "description": "Get detailed information for a specific order",
+        "authentication": false,
+        "pathParameters": {
+          "id": "number (order ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Order details",
+            "schema": {
+              "success": "boolean",
+              "order": {
+                "sale_id": "number",
+                "sale_time": "string",
+                "status": "string",
+                "total_amount": "number",
+                "payment_method": "string",
+                "delivery_address": "string",
+                "items": [
+                  {
+                    "recipe_id": "number",
+                    "recipe_name": "string",
+                    "quantity": "number",
+                    "price": "number",
+                    "image_url": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "completeOrder": {
+        "path": "/api/orders/{id}/complete",
+        "method": "PUT",
+        "description": "Mark customer order as completed and award loyalty points",
+        "authentication": true,
+        "pathParameters": {
+          "id": "number (order ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Order marked as completed",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "loyaltyPointsEarned": "number"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Order not found or not authorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getUserOrders": {
+        "path": "/api/orders/user/orders",
+        "method": "GET",
+        "description": "Get authenticated customer's order history",
+        "authentication": true,
+        "responses": {
+          "200": {
+            "description": "User's order history",
+            "schema": {
+              "success": "boolean",
+              "orders": [
+                {
+                  "sale_id": "number",
+                  "sale_time": "string",
+                  "status": "string",
+                  "delivery_address": "string",
+                  "total_amount": "number",
+                  "items": [
+                    {
+                      "recipe_id": "number",
+                      "recipe_name": "string",
+                      "quantity": "number",
+                      "price": "number",
+                      "image_url": "string"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getFavoriteMeals": {
+        "path": "/api/orders/user/favorite-meals",
+        "method": "GET",
+        "description": "Get user's favorite meals sorted by order frequency",
+        "authentication": true,
+        "responses": {
+          "200": {
+            "description": "User's favorite meals",
+            "schema": {
+              "success": "boolean",
+              "favoriteMeals": [
+                {
+                  "recipe_id": "number",
+                  "recipe_name": "string",
+                  "price": "number",
+                  "image_url": "string",
+                  "total_ordered": "number",
+                  "times_ordered": "number"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getGuestOrders": {
+        "path": "/api/orders/guest/orders/{phone}",
+        "method": "GET",
+        "description": "Get guest order history by phone number",
+        "authentication": false,
+        "pathParameters": {
+          "phone": "string (phone number)"
+        },
+        "responses": {
+          "200": {
+            "description": "Guest's order history",
+            "schema": {
+              "success": "boolean",
+              "orders": [
+                {
+                  "sale_id": "number",
+                  "sale_time": "string",
+                  "status": "string",
+                  "total_amount": "number",
+                  "items": [
+                    {
+                      "recipe_id": "number",
+                      "recipe_name": "string",
+                      "quantity": "number",
+                      "price": "number",
+                      "image_url": "string"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getRevenue": {
+        "path": "/api/orders/revenue",
+        "method": "GET",
+        "description": "Get all revenue records (staff only)",
+        "authentication": true,
+        "responses": {
+          "200": {
+            "description": "List of revenue records",
+            "schema": {
+              "success": "boolean",
+              "revenue": [
+                {
+                  "revenue_id": "number",
+                  "date_recorded": "string",
+                  "total_revenue": "number"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "recipes": {
+      "getAllRecipes": {
+        "path": "/api/recipes",
+        "method": "GET",
+        "description": "Get all recipes grouped by category with optional filters",
+        "authentication": false,
+        "queryParameters": {
+          "calories": "string (enum: '< 300', '300 - 500', '> 500')",
+          "protein": "string (enum: Salmon, Tuna, Chicken, Shrimp, Scallop, Tofu)"
+        },
+        "responses": {
+          "200": {
+            "description": "List of recipes grouped by category",
+            "schema": [
+              {
+                "id": "number",
+                "name": "string (category name)",
+                "items": [
+                  {
+                    "id": "number",
+                    "name": "string",
+                    "price": "number",
+                    "rating": "number",
+                    "image": "string",
+                    "calories": "number",
+                    "protein": "number",
+                    "fat": "number",
+                    "fiber": "number",
+                    "carb": "number",
+                    "is_available": "boolean",
+                    "category": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "createRecipe": {
+        "path": "/api/recipes",
+        "method": "POST",
+        "description": "Add a new recipe with ingredients. Accepts multipart form with optional image upload.",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "multipart/form-data",
+          "required": ["recipe_name", "category", "price"],
+          "optional": ["calories", "protein", "fat", "carbohydrate", "fiber", "ingredients", "image", "image_url"],
+          "schema": {
+            "recipe_name": "string",
+            "category": "string",
+            "calories": "number",
+            "protein": "number",
+            "fat": "number",
+            "carbohydrate": "number",
+            "fiber": "number",
+            "price": "number",
+            "ingredients": "string (JSON array: [{ingredient_id: number, weight: number}])",
+            "image": "File (binary)",
+            "image_url": "string (fallback URL if no file uploaded)"
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recipe created successfully",
+            "schema": {
+              "message": "string",
+              "recipeId": "number",
+              "image_url": "string"
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getRecipeDetails": {
+        "path": "/api/recipes/{id}",
+        "method": "GET",
+        "description": "Get detailed information for a specific recipe including ingredients",
+        "authentication": false,
+        "pathParameters": {
+          "id": "number (recipe ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Recipe details with ingredients",
+            "schema": {
+              "recipe_id": "number",
+              "recipe_name": "string",
+              "category": "string",
+              "calories": "number",
+              "protein": "number",
+              "fat": "number",
+              "carbohydrate": "number",
+              "fiber": "number",
+              "price": "number",
+              "image_url": "string",
+              "ingredients": [
+                {
+                  "ingredient_id": "number",
+                  "ingredient": "string",
+                  "amount": "number"
+                }
+              ]
+            }
+          },
+          "404": {
+            "description": "Recipe not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "updateRecipe": {
+        "path": "/api/recipes/{id}",
+        "method": "PUT",
+        "description": "Update recipe details and ingredients",
+        "authentication": false,
+        "pathParameters": {
+          "id": "number (recipe ID)"
+        },
+        "requestBody": {
+          "contentType": "application/json",
+          "schema": {
+            "recipe_name": "string",
+            "category": "string",
+            "calories": "number",
+            "protein": "number",
+            "fat": "number",
+            "carbohydrate": "number",
+            "fiber": "number",
+            "price": "number",
+            "image_url": "string",
+            "ingredients": [
+              {
+                "ingredient_id": "number",
+                "weight": "number"
+              }
+            ]
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recipe updated successfully",
+            "schema": {
+              "message": "string"
+            }
+          },
+          "404": {
+            "description": "Recipe not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "deleteRecipe": {
+        "path": "/api/recipes/{id}",
+        "method": "DELETE",
+        "description": "Delete a recipe and its associated ingredients and image",
+        "authentication": false,
+        "pathParameters": {
+          "id": "number (recipe ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Recipe deleted successfully",
+            "schema": {
+              "message": "string"
+            }
+          },
+          "404": {
+            "description": "Recipe not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "ingredients": {
+      "getAllIngredients": {
+        "path": "/api/ingredients",
+        "method": "GET",
+        "description": "Get all ingredients (staff only)",
+        "authentication": true,
+        "responses": {
+          "200": {
+            "description": "List of ingredients",
+            "schema": {
+              "success": "boolean",
+              "ingredients": [
+                {
+                  "ingredient_id": "number",
+                  "ingredient_name": "string",
+                  "unit": "string",
+                  "quantity": "number",
+                  "minimum_threshold": "number",
+                  "good_for": "string | null",
+                  "supplier_name": "string | null"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "createIngredient": {
+        "path": "/api/ingredients",
+        "method": "POST",
+        "description": "Add a new ingredient",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["ingredient_name", "quantity", "unit"],
+          "optional": ["minimum_threshold", "supplier_id"],
+          "schema": {
+            "ingredient_name": "string",
+            "quantity": "number",
+            "unit": "string",
+            "minimum_threshold": "number",
+            "supplier_id": "number"
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ingredient added successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "ingredientId": "number"
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "updateIngredient": {
+        "path": "/api/ingredients/{id}",
+        "method": "PUT",
+        "description": "Update ingredient details",
+        "authentication": false,
+        "pathParameters": {
+          "id": "number (ingredient ID)"
+        },
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["ingredient_name", "quantity", "unit"],
+          "optional": ["minimum_threshold", "supplier_id", "good_for"],
+          "schema": {
+            "ingredient_name": "string",
+            "quantity": "number",
+            "unit": "string",
+            "minimum_threshold": "number",
+            "supplier_id": "number",
+            "good_for": "string"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ingredient updated successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string"
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Ingredient not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "deleteIngredient": {
+        "path": "/api/ingredients/{id}",
+        "method": "DELETE",
+        "description": "Delete an ingredient",
+        "authentication": false,
+        "pathParameters": {
+          "id": "number (ingredient ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Ingredient deleted successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string"
+            }
+          },
+          "404": {
+            "description": "Ingredient not found"
+          },
+          "409": {
+            "description": "Cannot delete - ingredient is referenced by recipes, restock orders, or waste records"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getIngredientRestocks": {
+        "path": "/api/ingredients/{id}/restocks",
+        "method": "GET",
+        "description": "Get restock history for a specific ingredient (staff only)",
+        "authentication": true,
+        "pathParameters": {
+          "id": "number (ingredient ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Restock details",
+            "schema": {
+              "success": "boolean",
+              "restockDetails": [
+                {
+                  "restock_id": "number",
+                  "restock_date": "string",
+                  "import_quantity": "number",
+                  "import_price": "number",
+                  "unit": "string"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getWaste": {
+        "path": "/api/ingredients/waste",
+        "method": "GET",
+        "description": "Get waste records (staff only)",
+        "authentication": true,
+        "responses": {
+          "200": {
+            "description": "Waste details",
+            "schema": {
+              "success": "boolean",
+              "waste": [
+                {
+                  "waste_id": "number",
+                  "waste_date": "string",
+                  "ingredient_name": "string",
+                  "wasted_quantity": "number",
+                  "unit": "string"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "restock": {
+      "getRestocks": {
+        "path": "/api/restock",
+        "method": "GET",
+        "description": "Get restock orders (summary) or daily import totals for a specific month/year (staff only)",
+        "authentication": true,
+        "queryParameters": {
+          "month": "number (1-12, optional)",
+          "year": "number (optional)"
+        },
+        "responses": {
+          "200": {
+            "description": "Restock data",
+            "schema": {
+              "success": "boolean",
+              "restocks": [
+                {
+                  "restock_id": "number",
+                  "restock_date": "string",
+                  "supplier_name": "string"
+                }
+              ],
+              "dailyImportTotals": [
+                {
+                  "day": "number",
+                  "total_import_price": "number"
+                }
+              ]
+            },
+            "note": "Returns 'restocks' if no month/year provided, 'dailyImportTotals' if month/year provided"
+          },
+          "400": {
+            "description": "Invalid month or year"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "createRestock": {
+        "path": "/api/restock",
+        "method": "POST",
+        "description": "Create a new restock order with items (staff only)",
+        "authentication": true,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["supplier_id", "items"],
+          "optional": ["restock_date"],
+          "schema": {
+            "supplier_id": "number",
+            "restock_date": "string (ISO datetime, default: current time)",
+            "items": [
+              {
+                "ingredient_id": "number",
+                "import_quantity": "number",
+                "import_price": "number"
+              }
+            ]
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Restock order created successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "restockId": "number"
+            }
+          },
+          "400": {
+            "description": "Invalid restock data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "getRestockDetails": {
+        "path": "/api/restock/{id}",
+        "method": "GET",
+        "description": "Get detailed information for a specific restock order (staff only)",
+        "authentication": true,
+        "pathParameters": {
+          "id": "number (restock ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Restock details",
+            "schema": {
+              "success": "boolean",
+              "restockDetails": [
+                {
+                  "ingredient_id": "number",
+                  "ingredient_name": "string",
+                  "import_quantity": "number",
+                  "import_price": "number",
+                  "unit": "string",
+                  "restock_date": "string"
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Restock not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "schedules": {
+      "getSchedules": {
+        "path": "/api/schedules",
+        "method": "GET",
+        "description": "Get shifts for a specific week (staff only)",
+        "authentication": true,
+        "queryParameters": {
+          "startDate": "string (YYYY-MM-DD, required)"
+        },
+        "responses": {
+          "200": {
+            "description": "Week shifts retrieved successfully",
+            "schema": {
+              "success": "boolean",
+              "schedule": [
+                {
+                  "date": "number (day of month)",
+                  "shifts": [
+                    {
+                      "id": "string",
+                      "time": "string",
+                      "shift": "string (Morning | Evening)",
+                      "staff": [
+                        {
+                          "id": "number",
+                          "name": "string",
+                          "role": "string",
+                          "schedule_id": "number",
+                          "avatar": "string",
+                          "color": "string"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Missing or invalid startDate parameter"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "createSchedule": {
+        "path": "/api/schedules",
+        "method": "POST",
+        "description": "Create shift block or assign staff to shift (staff only)",
+        "authentication": true,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["shift_date", "shift"],
+          "optional": ["staff_id"],
+          "schema": {
+            "shift_date": "string (YYYY-MM-DD)",
+            "shift": "string (enum: Morning, Evening)",
+            "staff_id": "number (optional - if omitted, creates empty shift block)"
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shift created or staff assigned successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string",
+              "scheduleId": "number"
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "409": {
+            "description": "Conflict - shift already exists or staff already assigned"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "deleteSchedule": {
+        "path": "/api/schedules",
+        "method": "DELETE",
+        "description": "Delete a shift block (all assignments for a date+shift) (staff only)",
+        "authentication": true,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["shift_date", "shift"],
+          "schema": {
+            "shift_date": "string (YYYY-MM-DD)",
+            "shift": "string (enum: Morning, Evening)"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shift deleted successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string"
+            }
+          },
+          "400": {
+            "description": "Missing required fields"
+          },
+          "404": {
+            "description": "Shift not found"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "removeStaffFromShift": {
+        "path": "/api/schedules/{scheduleId}",
+        "method": "DELETE",
+        "description": "Remove staff from a shift (staff only)",
+        "authentication": true,
+        "pathParameters": {
+          "scheduleId": "number (schedule entry ID)"
+        },
+        "responses": {
+          "200": {
+            "description": "Staff removed from shift successfully",
+            "schema": {
+              "success": "boolean",
+              "message": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid schedule ID"
+          },
+          "404": {
+            "description": "Schedule entry not found"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "suppliers": {
+      "getAllSuppliers": {
+        "path": "/api/suppliers",
+        "method": "GET",
+        "description": "Get all suppliers with their contact information",
+        "authentication": false,
+        "responses": {
+          "200": {
+            "description": "Suppliers retrieved successfully",
+            "schema": {
+              "success": "boolean",
+              "data": [
+                {
+                  "supplier_id": "number",
+                  "supplier_name": "string",
+                  "phone": "string",
+                  "address": "string"
+                }
+              ]
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "sales": {
+      "getDailySales": {
+        "path": "/api/sales",
+        "method": "GET",
+        "description": "Get daily sales data (order count by day) for a specific month and year",
+        "authentication": false,
+        "queryParameters": {
+          "year": "number (required)",
+          "month": "number (1-12, required)"
+        },
+        "responses": {
+          "200": {
+            "description": "Daily sales data retrieved successfully",
+            "schema": {
+              "success": "boolean",
+              "data": [
+                {
+                  "day": "number (1-31)",
+                  "count": "number (number of orders)"
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Invalid year or month parameter"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "payments": {
+      "createPayment": {
+        "path": "/api/payments/create",
+        "method": "POST",
+        "description": "Initiate payment for an order via MoMo or Vietcombank (staff only)",
+        "authentication": true,
+        "requestBody": {
+          "contentType": "application/json",
+          "required": ["orderId", "paymentMethod"],
+          "schema": {
+            "orderId": "number",
+            "paymentMethod": "string (enum: momo, vietcombank)"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment created, returns payment URL",
+            "schema": {
+              "success": "boolean",
+              "paymentUrl": "string"
+            }
+          },
+          "400": {
+            "description": "Missing required fields or invalid payment method"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "momoCallback": {
+        "path": "/api/payments/momo/callback",
+        "method": "POST",
+        "description": "Webhook endpoint for MoMo to send payment status updates",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "application/json",
+          "schema": "object (MoMo callback payload)"
+        },
+        "responses": {
+          "200": {
+            "description": "Callback processed",
+            "schema": {
+              "resultCode": "string",
+              "message": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid signature"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "vietcombankCallback": {
+        "path": "/api/payments/vietcombank/callback",
+        "method": "POST",
+        "description": "Webhook endpoint for Vietcombank to send payment status updates",
+        "authentication": false,
+        "requestBody": {
+          "contentType": "application/json",
+          "schema": "object (Vietcombank callback payload)"
+        },
+        "responses": {
+          "200": {
+            "description": "Callback processed",
+            "schema": {
+              "status": "string",
+              "message": "string"
+            }
+          },
+          "400": {
+            "description": "Invalid signature"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "swagger": {
+      "getSwaggerSpec": {
+        "path": "/api/swagger",
+        "method": "GET",
+        "description": "Returns the OpenAPI/Swagger specification for the API",
+        "authentication": false,
+        "responses": {
+          "200": {
+            "description": "OpenAPI specification",
+            "schema": "object (OpenAPI/Swagger JSON)"
+          }
+        }
+      }
+    }
+  },
+  "notes": {
+    "authentication": "Most endpoints require Bearer token authentication. Token is obtained from /api/customers/signin. Include token in Authorization header: 'Bearer <token>'",
+    "staffOnly": "Endpoints marked as 'staff only' require staff authentication (different from customer authentication)",
+    "autoComplete": "Guest and customer orders auto-complete after 15 seconds",
+    "loyaltyPoints": "Loyalty points: 1 point per 1000 VND. Points are awarded when order is completed",
+    "paymentMethods": "Supported payment methods: cash, card, momo",
+    "dateFormats": "Date formats: YYYY-MM-DD for dates, ISO datetime strings for timestamps",
+    "errorHandling": "All endpoints return consistent error format: { success: boolean, message: string, error?: string (dev only) }",
+    "cors": "CORS is handled automatically for all endpoints"
+  }
+}
+

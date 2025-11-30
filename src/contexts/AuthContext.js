@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAPIUrl } from '../utils/api';
 
 /* Context cho xác thực */
 const AuthContext = createContext();
@@ -119,7 +120,7 @@ export function AuthProvider({ children, initialAuthStatus, setPropAuthStatus, i
           }
 
           console.log('Fetching user profile for address');
-          const profileResponse = await fetch('http://localhost:3001/api/users/profile', {
+          const profileResponse = await fetch(getAPIUrl('/customers/profile'), {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -172,7 +173,7 @@ export function AuthProvider({ children, initialAuthStatus, setPropAuthStatus, i
     console.log('AuthContext: Signing in', { email });
     
     try {
-      const response = await fetch('http://localhost:3001/api/users/signin', {
+      const response = await fetch(getAPIUrl('/customers/signin'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +195,7 @@ export function AuthProvider({ children, initialAuthStatus, setPropAuthStatus, i
       setAuthStatus('signedIn');
       
       // Fetch user's profile to get their address
-      const profileResponse = await fetch('http://localhost:3001/api/users/profile', {
+      const profileResponse = await fetch(getAPIUrl('/customers/profile'), {
         headers: {
           'Authorization': `Bearer ${data.token}`
         }
@@ -259,13 +260,20 @@ export function AuthProvider({ children, initialAuthStatus, setPropAuthStatus, i
       }
 
       // Make API call to create account
+      // Transform data to match API documentation format
       const requestBody = {
+        customer_name: `${userInfo.firstName} ${userInfo.lastName}`.trim(),
+        phone: userInfo.contactMobile,
         email: userInfo.email,
         password: userInfo.password,
-        firstName: userInfo.firstName,
-        lastName: userInfo.lastName,
-        contactMobile: userInfo.contactMobile,
-        address: address
+        ward: address.ward || '',
+        district: address.district || '',
+        street: address.street || '',
+        house_number: address.houseNumber || '',
+        building_name: address.buildingName || null,
+        block: address.block || null,
+        floor: address.floor || null,
+        room_number: address.roomNumber || null
       };
 
       console.log('Sending registration request with data:', {
@@ -273,7 +281,7 @@ export function AuthProvider({ children, initialAuthStatus, setPropAuthStatus, i
         password: '***' // Hide password in logs
       });
 
-      const response = await fetch('http://localhost:3001/api/users/register', {
+      const response = await fetch(getAPIUrl('/customers/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

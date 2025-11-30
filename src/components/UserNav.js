@@ -3,6 +3,7 @@ import './UserNav.css';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import CreateAccountForm from './CreateAccountForm';
+import { getAPIUrl } from '../utils/api';
 
 const UserNav = () => {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ const UserNav = () => {
     setIsLoadingTrackOrders(true);
     setTrackOrderError('');
     try {
-      const response = await fetch(`http://localhost:3001/api/orders/${trackOrderId}`);
+      const response = await fetch(getAPIUrl(`/api/orders/${trackOrderId}`));
       if (!response.ok) throw new Error('Order not found');
       const data = await response.json();
       if (data.success && data.order) {
@@ -236,7 +237,7 @@ const UserNav = () => {
                             className="received-order-btn"
                             onClick={async () => {
                               try {
-                                const response = await fetch(`http://localhost:3001/api/orders/guest/complete/${trackOrderResult.sale_id}`, {
+                                const response = await fetch(getAPIUrl(`/api/orders/guest/complete/${trackOrderResult.sale_id}`), {
                                   method: 'PUT',
                                   headers: { 'Content-Type': 'application/json' },
                                 });

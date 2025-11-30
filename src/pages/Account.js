@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import AccountSidebar from '../components/AccountSidebar';
+import { getAPIUrl } from '../utils/api';
 import './Account.css';
 import { useLocation } from 'react-router-dom';
 
@@ -71,7 +72,7 @@ function Account() {
           throw new Error('No authentication token found');
         }
 
-        const response = await fetch('http://localhost:3001/api/users/profile', {
+        const response = await fetch(getAPIUrl('/customers/profile'), {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -146,7 +147,7 @@ function Account() {
           }
 
           console.log('Fetching order history...');
-          const response = await fetch('http://localhost:3001/api/orders/user/orders', {
+          const response = await fetch(getAPIUrl('/orders/user/orders'), {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -185,7 +186,7 @@ function Account() {
           }
 
           console.log('Fetching favorite meals...');
-          const response = await fetch('http://localhost:3001/api/orders/user/favorite-meals', {
+          const response = await fetch(getAPIUrl('/orders/user/favorite-meals'), {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -246,7 +247,7 @@ function Account() {
         deliveryInstructions
       };
 
-      const response = await fetch('http://localhost:3001/api/users/update-address', {
+      const response = await fetch(getAPIUrl('/customers/update-address'), {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -393,7 +394,7 @@ function Account() {
                           onClick={async () => {
                             try {
                               const token = localStorage.getItem('token');
-                              const response = await fetch(`http://localhost:3001/api/orders/complete/${order.sale_id}`, {
+                              const response = await fetch(getAPIUrl(`/orders/${order.sale_id}/complete`), {
                                 method: 'PUT',
                                 headers: { 
                                   'Authorization': `Bearer ${token}`,

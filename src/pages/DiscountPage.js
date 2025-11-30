@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import CreateAccountForm from '../components/CreateAccountForm';
+import { getAPIUrl } from '../utils/api';
 import '../styles/DiscountPage.css';
 
 const DiscountPage = () => {
@@ -101,7 +102,7 @@ const DiscountPage = () => {
     setIsLoadingTrackOrders(true);
     setTrackOrderError('');
     try {
-      const response = await fetch(`http://localhost:3001/api/orders/guest/orders/${trackOrderPhone}`);
+      const response = await fetch(getAPIUrl(`/orders/guest/orders/${trackOrderPhone}`));
       if (!response.ok) throw new Error('Failed to fetch order history');
       const data = await response.json();
       if (data.success) {
@@ -292,7 +293,7 @@ const DiscountPage = () => {
                               className="received-order-btn"
                               onClick={async () => {
                                 try {
-                                  const response = await fetch(`http://localhost:3001/api/orders/guest/complete/${order.sale_id}`, {
+                                  const response = await fetch(getAPIUrl(`/orders/guest/complete/${order.sale_id}`), {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
                                   });

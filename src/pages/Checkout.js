@@ -5,6 +5,7 @@ import { useCart } from '../contexts/CartContext';
 import Navbar from '../components/Navbar';
 import UserNav from '../components/UserNav';
 import Footer from '../components/Footer';
+import { getAPIUrl } from '../utils/api';
 import './Checkout.css';
 
 function Checkout() {
@@ -318,8 +319,8 @@ function Checkout() {
 
       // Choose the appropriate endpoint
       const endpoint = isAuthenticated 
-        ? 'http://localhost:3001/api/orders/create'
-        : 'http://localhost:3001/api/orders/create-guest';
+        ? getAPIUrl('/orders/create')
+        : getAPIUrl('/orders');
 
       // Prepare headers
       const headers = {
@@ -354,7 +355,7 @@ function Checkout() {
       if (data.success && isAuthenticated) {
         try {
           // Fetch updated user profile
-          const profileResponse = await fetch('http://localhost:3001/api/users/profile', {
+          const profileResponse = await fetch(getAPIUrl('/customers/profile'), {
             headers: {
               'Authorization': `Bearer ${token}`
             }

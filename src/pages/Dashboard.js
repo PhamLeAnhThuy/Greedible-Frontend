@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAPIUrl } from '../utils/api';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -15,12 +16,12 @@ function Dashboard() {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const revRes = await fetch('http://localhost:3001/api/orders/revenue', {
+        const revRes = await fetch(getAPIUrl('/orders/revenue'), {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (!revRes.ok) throw new Error('Failed to fetch revenue data');
         const revData = await revRes.json();
-        const ingRes = await fetch('http://localhost:3001/api/orders/ingredients', {
+        const ingRes = await fetch(getAPIUrl('/ingredients'), {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (!ingRes.ok) throw new Error('Failed to fetch ingredients data');
