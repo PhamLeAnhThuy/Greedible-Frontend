@@ -9,7 +9,7 @@ import { useLocation } from 'react-router-dom';
 
 function Account() {
   const navigate = useNavigate();
-  const { authStatus, userData, userAddress, handleSignOut, setUserData } = useAuth();
+  const { authStatus, userData, userAddress, handleSignOut, setUserData, setUserAddress } = useAuth();
   const { addToCart } = useCart();
   
   // Tab state synced with ?tab=... in URL
@@ -267,6 +267,8 @@ function Account() {
           ...prev,
           address: newAddress
         }));
+        // Update AuthContext so Checkout page shows the updated address
+        setUserAddress(newAddress);
         setShowAddressModal(false);
       }
     } catch (err) {
