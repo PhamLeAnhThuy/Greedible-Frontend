@@ -267,8 +267,6 @@ function Account() {
           ...prev,
           address: newAddress
         }));
-        // Update AuthContext so Checkout page shows the updated address
-        setUserAddress(newAddress);
         setShowAddressModal(false);
       }
     } catch (err) {

@@ -314,7 +314,7 @@ function Checkout() {
         orderData.loyalty_points_earned = Math.floor(calculateSubtotal() * 0.1); // 10% of subtotal
       } else {
         // For guest users, add contact information
-        orderData.guest_contact = userContact;
+        orderData.phone_number = userContact;
       }
 
       // Choose the appropriate endpoint
