@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext';
-import FoodItem from '../components/FoodItem';
-import Footer from '../components/Footer';
-import UserNav from '../components/UserNav';
-import { getAPIUrl } from '../utils/api';
-import './MenuPage.css';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCart } from "../contexts/CartContext";
+import FoodItem from "../components/FoodItem";
+import Footer from "../components/Footer";
+import UserNav from "../components/UserNav";
+import { getAPIUrl } from "../utils/api";
+import "./MenuPage.css";
 
 function MenuPage() {
   // Track if user has explicitly continued as guest this session
@@ -20,14 +20,21 @@ function MenuPage() {
     continueAsGuest,
     handleCreateAccount,
     handleSignIn,
-    userData
+    userData,
   } = useAuth();
-  const { cart, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, updateNote } = useCart();
+  const {
+    cart,
+    addToCart,
+    removeFromCart,
+    increaseQuantity,
+    decreaseQuantity,
+    updateNote,
+  } = useCart();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState({});
   const [noteOpen, setNoteOpen] = useState({});
-  const [sortOrder, setSortOrder] = useState('low-to-high');
+  const [sortOrder, setSortOrder] = useState("low-to-high");
   const navRef = useRef(null);
   const overlayRef = useRef(null);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
@@ -36,19 +43,19 @@ function MenuPage() {
   const [showSignInForm, setShowSignInForm] = useState(false);
   const [showCreateAccountForm, setShowCreateAccountForm] = useState(false);
   const [tempItemToAdd, setTempItemToAdd] = useState(null);
-  const [userEmail, setUserEmail] = useState('');
-  const [userPassword, setUserPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [contactMobile, setContactMobile] = useState('');
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [contactMobile, setContactMobile] = useState("");
   const [showForgotPasswordForm, setShowForgotPasswordForm] = useState(false);
 
   // Track Your Order popup state
   const [showTrackOrderPopup, setShowTrackOrderPopup] = useState(false);
-  const [trackOrderPhone, setTrackOrderPhone] = useState('');
+  const [trackOrderPhone, setTrackOrderPhone] = useState("");
   const [trackOrderHistory, setTrackOrderHistory] = useState([]);
   const [isLoadingTrackOrders, setIsLoadingTrackOrders] = useState(false);
-  const [trackOrderError, setTrackOrderError] = useState('');
+  const [trackOrderError, setTrackOrderError] = useState("");
 
   // Data
   const [categories, setCategories] = useState([]);
@@ -56,27 +63,38 @@ function MenuPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [ward, setWard] = useState('');
-  const [district, setDistrict] = useState('');
-  const [houseNumber, setHouseNumber] = useState('');
-  const [buildingName, setBuildingName] = useState('');
-  const [block, setBlock] = useState('');
-  const [floor, setFloor] = useState('');
-  const [roomNumber, setRoomNumber] = useState('');
-  const [deliveryInstructions, setDeliveryInstructions] = useState('');
-  const [street, setStreet] = useState('');
+  const [ward, setWard] = useState("");
+  const [district, setDistrict] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [buildingName, setBuildingName] = useState("");
+  const [block, setBlock] = useState("");
+  const [floor, setFloor] = useState("");
+  const [roomNumber, setRoomNumber] = useState("");
+  const [deliveryInstructions, setDeliveryInstructions] = useState("");
+  const [street, setStreet] = useState("");
 
   const [wardDropdownOpen, setWardDropdownOpen] = useState(false);
   const [districtDropdownOpen, setDistrictDropdownOpen] = useState(false);
   const [streetDropdownOpen, setStreetDropdownOpen] = useState(false);
+  const [largeOrder, setLargeOrder] = useState(false);
 
-  const wards = ['Ward 1', 'Ward 2', 'Ward 3', 'Ward 4', 'Ward 5'];
-  const districts = ['District 1', 'District 2', 'District 3', 'District 4', 'District 5'];
-  const streets = ['Street 1', 'Street 2', 'Street 3', 'Street 4', 'Street 5'];
+  const wards = ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 5"];
+  const districts = [
+    "District 1",
+    "District 2",
+    "District 3",
+    "District 4",
+    "District 5",
+  ];
+  const streets = ["Street 1", "Street 2", "Street 3", "Street 4", "Street 5"];
 
   // Remove all filters, only use sort by price
 
-  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   useEffect(() => {
     if (userAddress) setUserAddress(userAddress);
@@ -88,24 +106,26 @@ function MenuPage() {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
-        const response = await fetch(getAPIUrl('/recipes'));
+        const response = await fetch(getAPIUrl("/recipes"));
         if (!response.ok) {
-          throw new Error('Failed to fetch recipes');
+          throw new Error("Failed to fetch recipes");
         }
         const data = await response.json();
         setCategories(data);
         const details = {};
-        data.forEach(category => {
-          category.items.forEach(item => {
-            details[`RCP-${String(item.id).padStart(3, '0')}`] = {
-              id: `RCP-${String(item.id).padStart(3, '0')}`,
+        data.forEach((category) => {
+          category.items.forEach((item) => {
+            details[`RCP-${String(item.id).padStart(3, "0")}`] = {
+              id: `RCP-${String(item.id).padStart(3, "0")}`,
               name: item.name,
               calories: item.calories.toString(),
               protein: item.protein.toString(),
               fat: item.fat.toString(),
               fiber: item.fiber.toString(),
               carb: item.carb.toString(),
-              description: `${item.name} is a delicious ${category.name.toLowerCase()} dish.`
+              description: `${
+                item.name
+              } is a delicious ${category.name.toLowerCase()} dish.`,
             };
           });
         });
@@ -119,26 +139,90 @@ function MenuPage() {
     fetchRecipes();
   }, []);
 
+  useEffect(() => {
+    if (largeOrder) {
+      // Auto-hide after 2 seconds
+      const timer = setTimeout(() => {
+        setLargeOrder(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [largeOrder]);
+
   // Removed auto-show auth modal on page load. Modal will only show when user clicks Sign In in user-nav.
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   // Removed toggleFilter and setFiltersOpen
-  const toggleCategory = (categoryId) => setCategoriesOpen(prev => ({ ...prev, [categoryId]: !prev[categoryId] }));
-  const toggleNote = (itemId) => setNoteOpen(prev => ({ ...prev, [itemId]: !prev[itemId] }));
-  const showRecipeDetails = (recipeId) => { setSelectedRecipe(recipeId); setShowDetailPopup(true); };
-  const closeDetailPopup = () => { setShowDetailPopup(false); setSelectedRecipe(null); };
-  const handleAccountClick = (e) => { e.preventDefault(); if (authStatus === 'signedIn') { navigate('/account'); } else { setShowAuthModal(true); } };
-  const onAuthSuccess = (status) => { if (status === 'signedIn') { setShowAuthModal(false); setShowSignInForm(false); setShowCreateAccountForm(false); setShowForgotPasswordForm(false); } };
+  const toggleCategory = (categoryId) =>
+    setCategoriesOpen((prev) => ({ ...prev, [categoryId]: !prev[categoryId] }));
+  const toggleNote = (itemId) =>
+    setNoteOpen((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
+  const showRecipeDetails = (recipeId) => {
+    setSelectedRecipe(recipeId);
+    setShowDetailPopup(true);
+  };
+  const closeDetailPopup = () => {
+    setShowDetailPopup(false);
+    setSelectedRecipe(null);
+  };
+  const handleAccountClick = (e) => {
+    e.preventDefault();
+    if (authStatus === "signedIn") {
+      navigate("/account");
+    } else {
+      setShowAuthModal(true);
+    }
+  };
+  const onAuthSuccess = (status) => {
+    if (status === "signedIn") {
+      setShowAuthModal(false);
+      setShowSignInForm(false);
+      setShowCreateAccountForm(false);
+      setShowForgotPasswordForm(false);
+    }
+  };
+
   const filters = [
-    { id: 'calories', name: 'Calories', options: ['All', '< 300', '300 - 500', '> 500'] },
-    { id: 'protein', name: 'Main Protein', options: ['All', 'Salmon', 'Tuna', 'Chicken', 'Shrimp', 'Scallop', 'Tofu'] }
+    {
+      id: "calories",
+      name: "Calories",
+      options: ["All", "< 300", "300 - 500", "> 500"],
+    },
+    {
+      id: "protein",
+      name: "Main Protein",
+      options: [
+        "All",
+        "Salmon",
+        "Tuna",
+        "Chicken",
+        "Shrimp",
+        "Scallop",
+        "Tofu",
+      ],
+    },
   ];
-  const calculateTotal = () => cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+  const calculateTotal = () =>
+    cart
+      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .toFixed(2);
   const handleCheckout = () => {
-    if (cart.length === 0) { alert("Your cart is empty"); return; }
-    if (authStatus === 'guest') { navigate('/delivery'); }
-    else if (authStatus === 'signedIn') { navigate('/checkout'); }
-    else { setShowAuthModal(true); }
+    if (cart.length === 0) {
+      alert("Your cart is empty");
+      return;
+    }
+    if (cart.find((item) => item.quantity > 10)) {
+      setLargeOrder(true);
+      return;
+    }
+    if (authStatus === "guest") {
+      navigate("/delivery");
+    } else if (authStatus === "signedIn") {
+      navigate("/checkout");
+    } else {
+      setShowAuthModal(true);
+    }
   };
   // Removed handleFilterChange and setSelectedFilters
   // Remove renderFilterOptions and all filter UI
@@ -147,27 +231,35 @@ function MenuPage() {
     if (error) return <div className="error">Error: {error}</div>;
     // Sort items by price
     const sortedItems = [...items].sort((a, b) =>
-      sortOrder === 'low-to-high' ? a.price - b.price : b.price - a.price
+      sortOrder === "low-to-high" ? a.price - b.price : b.price - a.price
     );
     return (
       <div className="category-items">
-        {sortedItems.map(item => {
-          const recipeId = `RCP-${String(item.id).padStart(3, '0')}`;
+        {sortedItems.map((item) => {
+          const recipeId = `RCP-${String(item.id).padStart(3, "0")}`;
           const formattedPrice = formatCurrency(item.price);
           return (
-            <FoodItem key={item.id} product={item} onAddToCart={addToCart} showDetails={() => showRecipeDetails(recipeId)} formattedPrice={formattedPrice} />
+            <FoodItem
+              key={item.id}
+              product={item}
+              onAddToCart={addToCart}
+              showDetails={() => showRecipeDetails(recipeId)}
+              formattedPrice={formattedPrice}
+            />
           );
         })}
       </div>
     );
   };
-  const showNotification = (message, type = 'info') => {
+  const showNotification = (message, type = "info") => {
     setNotification({ show: true, message, type });
-    setTimeout(() => { setNotification({ show: false, message: '', type: '' }); }, 5000);
+    setTimeout(() => {
+      setNotification({ show: false, message: "", type: "" });
+    }, 5000);
   };
   const formatCurrency = (amount) => {
     const amountStr = Math.floor(amount).toString();
-    const formattedAmount = amountStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const formattedAmount = amountStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     return `${formattedAmount} vnd`;
   };
   const handleCreateAccountSubmit = async (e) => {
@@ -184,39 +276,60 @@ function MenuPage() {
   const handleTrackOrderClick = (e) => {
     e.preventDefault();
     setShowTrackOrderPopup(true);
-    setTrackOrderPhone('');
+    setTrackOrderPhone("");
     setTrackOrderHistory([]);
-    setTrackOrderError('');
+    setTrackOrderError("");
   };
   const handleTrackOrderSubmit = async (e) => {
     e.preventDefault();
-    if (!trackOrderPhone) { setTrackOrderError('Please enter your phone number'); return; }
-    if (!/^\d{10}$/.test(trackOrderPhone)) { setTrackOrderError('Phone number must be exactly 10 digits'); return; }
+    if (!trackOrderPhone) {
+      setTrackOrderError("Please enter your phone number");
+      return;
+    }
+    if (!/^\d{10}$/.test(trackOrderPhone)) {
+      setTrackOrderError("Phone number must be exactly 10 digits");
+      return;
+    }
     setIsLoadingTrackOrders(true);
-    setTrackOrderError('');
+    setTrackOrderError("");
     try {
-      const response = await fetch(getAPIUrl(`/orders/guest/orders/${trackOrderPhone}`));
-      if (!response.ok) throw new Error('Failed to fetch order history');
+      const response = await fetch(
+        getAPIUrl(`/orders/guest/orders/${trackOrderPhone}`)
+      );
+      if (!response.ok) throw new Error("Failed to fetch order history");
       const data = await response.json();
       if (data.success) {
         setTrackOrderHistory(data.orders);
-        if (data.orders.length === 0) setTrackOrderError('No orders found for this phone number');
+        if (data.orders.length === 0)
+          setTrackOrderError("No orders found for this phone number");
       } else {
-        setTrackOrderError(data.message || 'Failed to fetch order history');
+        setTrackOrderError(data.message || "Failed to fetch order history");
       }
     } catch (error) {
-      setTrackOrderError('Error fetching order history. Please try again.');
+      setTrackOrderError("Error fetching order history. Please try again.");
     } finally {
       setIsLoadingTrackOrders(false);
     }
   };
-  const calculateTotalAmountTrack = (items) => items.reduce((total, item) => total + item.price * item.quantity, 0);
+  const calculateTotalAmountTrack = (items) =>
+    items.reduce((total, item) => total + item.price * item.quantity, 0);
 
   return (
     <div className="menu-page">
+      {largeOrder && (
+  <div className="toast-message">
+    <div className="toast-content">
+      <span className="toast-icon">⚠️</span>
+      <span className="toast-text">Order with over 10 items need confirmation from staff. Please contact staff for support.</span>
+    </div>
+  </div>
+)}
       <UserNav />
       <div className="navbar menu-navbar">
-        <div className={`menu-icon ${menuOpen ? 'open' : ''}`} onClick={toggleMenu}>
+        <div
+          className={`menu-icon ${menuOpen ? "open" : ""}`}
+          onClick={toggleMenu}
+        >
           <div className="bar"></div>
           <div className="bar"></div>
           <div className="bar"></div>
@@ -224,9 +337,15 @@ function MenuPage() {
         <div className="mobile-logo">
           <img src="/assets/logo.png" alt="Logo" className="logo" />
         </div>
-        <div className={`overlay ${menuOpen ? 'active' : ''}`} ref={overlayRef} onClick={toggleMenu}></div>
-        <div className={`nav-links ${menuOpen ? 'active' : ''}`} ref={navRef}>
-          <div className="close-btn" onClick={toggleMenu}>✕</div>
+        <div
+          className={`overlay ${menuOpen ? "active" : ""}`}
+          ref={overlayRef}
+          onClick={toggleMenu}
+        ></div>
+        <div className={`nav-links ${menuOpen ? "active" : ""}`} ref={navRef}>
+          <div className="close-btn" onClick={toggleMenu}>
+            ✕
+          </div>
           <a href="/">Home</a>
           <a href="/menu">Menu</a>
           <img src="/assets/logo.png" alt="Logo" className="logo" />
@@ -234,16 +353,20 @@ function MenuPage() {
           <a href="/support">Support</a>
         </div>
       </div>
-            <div className="menu-container">
+      <div className="menu-container">
         <div className="sidebar">
           <h3>Menu</h3>
-          <div className="sort-section" style={{ marginBottom: '20px' }}>
+          <div className="sort-section" style={{ marginBottom: "20px" }}>
             <label htmlFor="sortOrder">Sort by Price: </label>
             <select
               id="sortOrder"
               value={sortOrder}
-              onChange={e => setSortOrder(e.target.value)}
-              style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #ccc' }}
+              onChange={(e) => setSortOrder(e.target.value)}
+              style={{
+                padding: "6px 12px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
             >
               <option value="low-to-high">Low to High</option>
               <option value="high-to-low">High to Low</option>
@@ -256,13 +379,22 @@ function MenuPage() {
           ) : error ? (
             <div className="error">Error: {error}</div>
           ) : (
-            categories.map(category => {
+            categories.map((category) => {
               const isCategoryOpen = categoriesOpen[category.id] !== false;
               return (
                 <div className="category" key={category.id}>
-                  <div className="category-header" onClick={() => toggleCategory(category.id)}>
+                  <div
+                    className="category-header"
+                    onClick={() => toggleCategory(category.id)}
+                  >
                     <h3>{category.name}</h3>
-                    <span className={`toggle-icon ${isCategoryOpen ? 'open' : 'closed'}`}>▼</span>
+                    <span
+                      className={`toggle-icon ${
+                        isCategoryOpen ? "open" : "closed"
+                      }`}
+                    >
+                      ▼
+                    </span>
                   </div>
                   {isCategoryOpen && renderCategoryItems(category.items)}
                 </div>
@@ -284,15 +416,32 @@ function MenuPage() {
                       <div className="cart-item-header">
                         <h4>{item.name}</h4>
                         <div className="item-quantity-controls">
-                          <span className="quantity-btn" onClick={() => decreaseQuantity(index)}>-</span>
+                          <span
+                            className="quantity-btn"
+                            onClick={() => decreaseQuantity(index)}
+                          >
+                            -
+                          </span>
                           <span className="quantity">{item.quantity}</span>
-                          <span className="quantity-btn" onClick={() => increaseQuantity(index)}>+</span>
-                          <span className="remove-btn" onClick={() => removeFromCart(index)}>🗑️</span>
+                          <span
+                            className="quantity-btn"
+                            onClick={() => increaseQuantity(index)}
+                          >
+                            +
+                          </span>
+                          <span
+                            className="remove-btn"
+                            onClick={() => removeFromCart(index)}
+                          >
+                            🗑️
+                          </span>
                         </div>
                       </div>
                       <div className="cart-item-footer">
                         {/* Note section removed */}
-                        <div className="cart-item-price">{formatCurrency(item.price)}</div>
+                        <div className="cart-item-price">
+                          {formatCurrency(item.price)}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -308,28 +457,69 @@ function MenuPage() {
               <span>{formatCurrency(calculateTotal())}</span>
             </div>
           )}
-          <button className="checkout-btn" onClick={handleCheckout} disabled={cart.length === 0}>Check Out</button>
+          <button
+            className="checkout-btn"
+            onClick={handleCheckout}
+            disabled={cart.length === 0}
+          >
+            Check Out
+          </button>
         </div>
       </div>
       {showTrackOrderPopup && (
         <div className="auth-modal-overlay">
           <div className="auth-form-modal track-order-modal">
             <h3>Track Your Order</h3>
-            <button className="close-modal-btn" onClick={() => setShowTrackOrderPopup(false)}>✕</button>
+            <button
+              className="close-modal-btn"
+              onClick={() => setShowTrackOrderPopup(false)}
+            >
+              ✕
+            </button>
             {trackOrderHistory.length === 0 ? (
               <form onSubmit={handleTrackOrderSubmit}>
                 <div className="form-group">
                   <label>Phone Number</label>
-                  <input type="tel" value={trackOrderPhone} onChange={(e) => setTrackOrderPhone(e.target.value)} placeholder="Enter your phone number" required pattern="[0-9]{10}" title="Phone number must be exactly 10 digits" />
+                  <input
+                    type="tel"
+                    value={trackOrderPhone}
+                    onChange={(e) => setTrackOrderPhone(e.target.value)}
+                    placeholder="Enter your phone number"
+                    required
+                    pattern="[0-9]{10}"
+                    title="Phone number must be exactly 10 digits"
+                  />
                 </div>
-                {trackOrderError && <div className="error-message" style={{color: 'red', marginBottom: '10px'}}>{trackOrderError}</div>}
-                <button type="submit" className="form-submit-btn" disabled={isLoadingTrackOrders}>{isLoadingTrackOrders ? 'Loading...' : 'Track Orders'}</button>
+                {trackOrderError && (
+                  <div
+                    className="error-message"
+                    style={{ color: "red", marginBottom: "10px" }}
+                  >
+                    {trackOrderError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  className="form-submit-btn"
+                  disabled={isLoadingTrackOrders}
+                >
+                  {isLoadingTrackOrders ? "Loading..." : "Track Orders"}
+                </button>
               </form>
             ) : (
               <div className="track-order-results">
                 <div className="track-order-header">
                   <h4>Order History for {trackOrderPhone}</h4>
-                  <button className="back-btn" onClick={() => { setTrackOrderHistory([]); setTrackOrderPhone(''); setTrackOrderError(''); }}>Search Again</button>
+                  <button
+                    className="back-btn"
+                    onClick={() => {
+                      setTrackOrderHistory([]);
+                      setTrackOrderPhone("");
+                      setTrackOrderError("");
+                    }}
+                  >
+                    Search Again
+                  </button>
                 </div>
                 {isLoadingTrackOrders ? (
                   <div className="loading">Loading orders...</div>
@@ -339,23 +529,44 @@ function MenuPage() {
                       <div key={order.sale_id} className="order-card">
                         <div className="order-header">
                           <div className="order-info">
-                            <span className="order-id">Order #{order.sale_id}</span>
-                            <span className="order-date">{new Date(order.sale_time).toLocaleDateString()}</span>
+                            <span className="order-id">
+                              Order #{order.sale_id}
+                            </span>
+                            <span className="order-date">
+                              {new Date(order.sale_time).toLocaleDateString()}
+                            </span>
                           </div>
                           <div className="order-status">
-                            <span className={`status ${order.status.toLowerCase()}`}>{order.status}</span>
+                            <span
+                              className={`status ${order.status.toLowerCase()}`}
+                            >
+                              {order.status}
+                            </span>
                           </div>
                         </div>
                         <div className="order-items">
                           {order.items.map((item, index) => (
                             <div key={index} className="order-item">
-                              <img src={item.image_url} alt={item.recipe_name} onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-food.jpg'; }} />
+                              <img
+                                src={item.image_url}
+                                alt={item.recipe_name}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "/placeholder-food.jpg";
+                                }}
+                              />
                               <div className="item-details">
-                                <span className="item-name">{item.recipe_name}</span>
-                                <span className="item-quantity">x{item.quantity}</span>
+                                <span className="item-name">
+                                  {item.recipe_name}
+                                </span>
+                                <span className="item-quantity">
+                                  x{item.quantity}
+                                </span>
                               </div>
                               <div className="order-item-details">
-                                <p>{formatCurrency(item.price * item.quantity)}</p>
+                                <p>
+                                  {formatCurrency(item.price * item.quantity)}
+                                </p>
                               </div>
                             </div>
                           ))}
@@ -363,33 +574,53 @@ function MenuPage() {
                         <div className="order-footer">
                           <div className="order-total">
                             <span>Total:</span>
-                            <span>{formatCurrency(calculateTotalAmountTrack(order.items))}</span>
+                            <span>
+                              {formatCurrency(
+                                calculateTotalAmountTrack(order.items)
+                              )}
+                            </span>
                           </div>
                           <div className="order-address">
                             <span>Delivered to:</span>
                             <span>{order.delivery_address}</span>
                           </div>
-                          {order.status === 'Pending' && (
+                          {order.status === "Pending" && (
                             <button
                               className="received-order-btn"
                               onClick={async () => {
                                 try {
-                                  const response = await fetch(getAPIUrl(`/orders/guest/complete/${order.sale_id}`), {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                  });
+                                  const response = await fetch(
+                                    getAPIUrl(
+                                      `/orders/guest/complete/${order.sale_id}`
+                                    ),
+                                    {
+                                      method: "PUT",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                    }
+                                  );
                                   const data = await response.json();
                                   if (response.ok && data.success) {
                                     // Update order status in UI
-                                    setTrackOrderHistory(prev => prev.map(o =>
-                                      o.sale_id === order.sale_id ? { ...o, status: 'Completed' } : o
-                                    ));
-                                    alert('Order marked as completed!');
+                                    setTrackOrderHistory((prev) =>
+                                      prev.map((o) =>
+                                        o.sale_id === order.sale_id
+                                          ? { ...o, status: "Completed" }
+                                          : o
+                                      )
+                                    );
+                                    alert("Order marked as completed!");
                                   } else {
-                                    alert(data.message || 'Failed to mark order as completed');
+                                    alert(
+                                      data.message ||
+                                        "Failed to mark order as completed"
+                                    );
                                   }
                                 } catch (error) {
-                                  alert('Failed to mark order as completed. Please try again.');
+                                  alert(
+                                    "Failed to mark order as completed. Please try again."
+                                  );
                                 }
                               }}
                             >
@@ -401,7 +632,9 @@ function MenuPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="no-orders"><p>No orders found for this phone number.</p></div>
+                  <div className="no-orders">
+                    <p>No orders found for this phone number.</p>
+                  </div>
                 )}
               </div>
             )}
@@ -411,20 +644,45 @@ function MenuPage() {
       {showDetailPopup && selectedRecipe && recipeDetails[selectedRecipe] && (
         <div className="detail-popup-overlay" onClick={closeDetailPopup}>
           <div className="detail-popup" onClick={(e) => e.stopPropagation()}>
-            <button className="close-popup-btn" onClick={closeDetailPopup}>✕</button>
+            <button className="close-popup-btn" onClick={closeDetailPopup}>
+              ✕
+            </button>
             <div className="detail-popup-content">
               <div className="detail-popup-image">
-                <img src={`/assets/${selectedRecipe}.jpg`} alt={recipeDetails[selectedRecipe].name} onError={(e) => { if (e.target.src.includes('.jpg')) { e.target.src = `/assets/${selectedRecipe}.webp`; } }} />
+                <img
+                  src={`/assets/${selectedRecipe}.jpg`}
+                  alt={recipeDetails[selectedRecipe].name}
+                  onError={(e) => {
+                    if (e.target.src.includes(".jpg")) {
+                      e.target.src = `/assets/${selectedRecipe}.webp`;
+                    }
+                  }}
+                />
               </div>
               <div className="detail-popup-info">
                 <h3>{recipeDetails[selectedRecipe].name}</h3>
-                <p className="detail-description">{recipeDetails[selectedRecipe].description}</p>
+                <p className="detail-description">
+                  {recipeDetails[selectedRecipe].description}
+                </p>
                 <ul className="nutrition-list">
-                  <li><strong>Calories:</strong> {recipeDetails[selectedRecipe].calories}</li>
-                  <li><strong>Protein:</strong> {recipeDetails[selectedRecipe].protein}g</li>
-                  <li><strong>Fat:</strong> {recipeDetails[selectedRecipe].fat}g</li>
-                  <li><strong>Fiber:</strong> {recipeDetails[selectedRecipe].fiber}g</li>
-                  <li><strong>Carb:</strong> {recipeDetails[selectedRecipe].carb}g</li>
+                  <li>
+                    <strong>Calories:</strong>{" "}
+                    {recipeDetails[selectedRecipe].calories}
+                  </li>
+                  <li>
+                    <strong>Protein:</strong>{" "}
+                    {recipeDetails[selectedRecipe].protein}g
+                  </li>
+                  <li>
+                    <strong>Fat:</strong> {recipeDetails[selectedRecipe].fat}g
+                  </li>
+                  <li>
+                    <strong>Fiber:</strong>{" "}
+                    {recipeDetails[selectedRecipe].fiber}g
+                  </li>
+                  <li>
+                    <strong>Carb:</strong> {recipeDetails[selectedRecipe].carb}g
+                  </li>
                 </ul>
               </div>
             </div>
@@ -435,32 +693,66 @@ function MenuPage() {
         <div className="auth-modal-overlay">
           <div className="auth-form-modal">
             <h3>Forgot Password?</h3>
-            <button className="close-modal-btn" onClick={() => setShowForgotPasswordForm(false)}>✕</button>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              const email = userEmail;
-              if (!email) { showNotification('Please enter your email address.', 'error'); return; }
-              try {
-                showNotification('Sending password reset link...', 'info');
-                const response = await fetch(getAPIUrl('/customers/forgot-password'), {
-                  method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ email }),
-                });
-                const data = await response.json();
-                if (response.ok) {
-                  showNotification(data.message || 'If your email is in our system, you will receive a password reset link shortly.', 'success');
-                  setShowForgotPasswordForm(false); setUserEmail('');
-                } else {
-                  showNotification(data.message || 'Failed to send reset link. Please try again.', 'error');
+            <button
+              className="close-modal-btn"
+              onClick={() => setShowForgotPasswordForm(false)}
+            >
+              ✕
+            </button>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const email = userEmail;
+                if (!email) {
+                  showNotification("Please enter your email address.", "error");
+                  return;
                 }
-              } catch (error) {
-                showNotification('An error occurred while trying to send the reset link. Please try again later.', 'error');
-              }
-            }}>
+                try {
+                  showNotification("Sending password reset link...", "info");
+                  const response = await fetch(
+                    getAPIUrl("/customers/forgot-password"),
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email }),
+                    }
+                  );
+                  const data = await response.json();
+                  if (response.ok) {
+                    showNotification(
+                      data.message ||
+                        "If your email is in our system, you will receive a password reset link shortly.",
+                      "success"
+                    );
+                    setShowForgotPasswordForm(false);
+                    setUserEmail("");
+                  } else {
+                    showNotification(
+                      data.message ||
+                        "Failed to send reset link. Please try again.",
+                      "error"
+                    );
+                  }
+                } catch (error) {
+                  showNotification(
+                    "An error occurred while trying to send the reset link. Please try again later.",
+                    "error"
+                  );
+                }
+              }}
+            >
               <div className="form-group">
                 <label>Email</label>
-                <input type="email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} required />
+                <input
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  required
+                />
               </div>
-              <button type="submit" className="form-submit-btn">Send Reset Link</button>
+              <button type="submit" className="form-submit-btn">
+                Send Reset Link
+              </button>
             </form>
           </div>
         </div>
