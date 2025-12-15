@@ -203,6 +203,7 @@ function MenuPage() {
       ],
     },
   ];
+
   const calculateTotal = () =>
     cart
       .reduce((total, item) => total + item.price * item.quantity, 0)
@@ -212,18 +213,27 @@ function MenuPage() {
       alert("Your cart is empty");
       return;
     }
+
     if (cart.find((item) => item.quantity > 10)) {
       setLargeOrder(true);
       return;
     }
+
+    // ✅ Guest must confirm via auth modal
     if (authStatus === "guest") {
-      navigate("/delivery");
-    } else if (authStatus === "signedIn") {
-      navigate("/checkout");
-    } else {
       setShowAuthModal(true);
+      return;
     }
+
+    if (authStatus === "signedIn") {
+      navigate("/checkout");
+      return;
+    }
+
+    // fallback (not authenticated)
+    setShowAuthModal(true);
   };
+
   // Removed handleFilterChange and setSelectedFilters
   // Remove renderFilterOptions and all filter UI
   const renderCategoryItems = (items) => {
@@ -317,13 +327,16 @@ function MenuPage() {
   return (
     <div className="menu-page">
       {largeOrder && (
-  <div className="toast-message">
-    <div className="toast-content">
-      <span className="toast-icon">⚠️</span>
-      <span className="toast-text">Order with over 10 items need confirmation from staff. Please contact staff for support.</span>
-    </div>
-  </div>
-)}
+        <div className="toast-message">
+          <div className="toast-content">
+            <span className="toast-icon">⚠️</span>
+            <span className="toast-text">
+              Order with over 10 items need confirmation from staff. Please
+              contact staff for support.
+            </span>
+          </div>
+        </div>
+      )}
       <UserNav />
       <div className="navbar menu-navbar">
         <div
@@ -754,6 +767,50 @@ function MenuPage() {
                 Send Reset Link
               </button>
             </form>
+          </div>
+        </div>
+      )}
+      {showAuthModal && (
+        <div className="auth-modal-overlay">
+          <div className="auth-modal">
+            <h3>Sign in to Greedible and start Green today</h3>
+            <div className="auth-options">
+              <button
+                className="auth-option-btn sign-in-btn"
+                onClick={() => {
+                  setShowSignInForm(true);
+                  setShowAuthModal(false);
+                }}
+              >
+                SIGN IN
+              </button>
+              <div className="auth-separator"></div>
+              <button
+                className="auth-option-btn create-account-btn"
+                onClick={() => {
+                  setShowCreateAccountForm(true);
+                  setShowAuthModal(false);
+                }}
+              >
+                CREATE AN ACCOUNT
+                <span className="account-time">in less than 2 minutes</span>
+                <span className="account-benefits">
+                  To enjoy member benefits
+                </span>
+              </button>
+              <div className="auth-separator"></div>
+              <button
+                className="auth-option-btn guest-btn"
+                onClick={() => {
+                  continueAsGuest();
+                  setHasContinuedAsGuest(true);
+                  setShowAuthModal(false);
+                  navigate("/delivery"); // ✅ redirect like before
+                }}
+              >
+                CONTINUE AS GUEST
+              </button>
+            </div>
           </div>
         </div>
       )}
