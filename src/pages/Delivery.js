@@ -153,8 +153,8 @@ function Delivery({ cart, setCart, userAddress, setUserAddress }) {
         <form onSubmit={handleSubmit} noValidate>
           <div className="delivery-form">
             <div className="delivery-row">
-              <div className="delivery-field">
-                <label>*Ward:</label>
+              <div className="delivery-field required-delivery-field">
+                <label>Ward:</label>
                 <div className="custom-select">
                   <select 
                     name="ward"
@@ -171,8 +171,8 @@ function Delivery({ cart, setCart, userAddress, setUserAddress }) {
                 </div>
               </div>
               
-              <div className="delivery-field">
-                <label>*District:</label>
+              <div className="delivery-field required-delivery-field">
+                <label>District:</label>
                 <div className="custom-select">
                   <select 
                     name="district"
@@ -191,8 +191,8 @@ function Delivery({ cart, setCart, userAddress, setUserAddress }) {
             </div>
             
             <div className="delivery-row">
-              <div className="delivery-field">
-                <label>*Street:</label>
+              <div className="delivery-field required-delivery-field">
+                <label>Street:</label>
                 <div className="custom-select">
                   <select 
                     name="street"
@@ -209,8 +209,8 @@ function Delivery({ cart, setCart, userAddress, setUserAddress }) {
                 </div>
               </div>
               
-              <div className="delivery-field">
-                <label>*House/Street Number:</label>
+              <div className="delivery-field required-delivery-field">
+                <label>House/Street Number:</label>
                 <input 
                   name="houseNumber"
                   type="text" 

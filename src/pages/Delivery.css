@@ -59,7 +59,7 @@
     font-weight: bold;
   }
   
-  .delivery-field label::after {
+  .required-delivery-field label::after {
     content: " *";
     color: #f44336;
   }
