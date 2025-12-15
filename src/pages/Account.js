@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import AccountSidebar from '../components/AccountSidebar';
 import { getAPIUrl } from '../utils/api';
+import UserNav from '../components/UserNav';
 import './Account.css';
 import { useLocation } from 'react-router-dom';
 
@@ -536,6 +537,7 @@ function Account() {
 
   return (
     <div className="account-page">
+      <UserNav/>
       <div className="account-container">
         <AccountSidebar 
           activeTab={activeTab}
