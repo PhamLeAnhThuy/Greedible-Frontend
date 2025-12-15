@@ -8,6 +8,94 @@ import UserNav from "../components/UserNav";
 import "./Account.css";
 import { useLocation } from "react-router-dom";
 
+function UpdateProfileModal({ profileData, onClose, onSave }) {
+  const [name, setName] = useState(profileData?.name || "");
+  const [email, setEmail] = useState(profileData?.email || "");
+  const [phone, setPhone] = useState(profileData?.contactMobile || "");
+
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const newErrors = {};
+
+    // Name: letters + spaces only
+    if (!/^[A-Za-z\s]+$/.test(name)) {
+      newErrors.name = "Name must contain letters only";
+    }
+
+    // Email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    // Phone: numbers only, length = 10
+    if (!/^\d{10}$/.test(phone)) {
+      newErrors.phone = "Phone must be 10 digits only";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = () => {
+    if (!validate()) return;
+
+    onSave({ name, email, phone });
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h3>Update Information</h3>
+          <button className="close-modal-btn" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+
+        <div className="modal-body">
+          <div className="form-field">
+            <label>Full Name</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            {errors.name && <p className="error-text">{errors.name}</p>}
+          </div>
+
+          <div className="form-field">
+            <label>Email</label>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            {errors.email && <p className="error-text">{errors.email}</p>}
+          </div>
+
+          <div className="form-field">
+            <label>Phone</label>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+            {errors.phone && <p className="error-text">{errors.phone}</p>}
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="cancel-btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="save-btn" onClick={handleSave}>
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function Account() {
   const navigate = useNavigate();
   const {
@@ -35,6 +123,7 @@ function Account() {
   const [orderHistory, setOrderHistory] = useState([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [refreshOrdersTrigger, setRefreshOrdersTrigger] = useState(0);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Address form states
   const [ward, setWard] = useState("");
@@ -186,7 +275,6 @@ function Account() {
     fetchOrderHistory();
   }, [activeTab, authStatus, refreshOrdersTrigger]);
 
-
   // Handlers
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -249,6 +337,51 @@ function Account() {
     }
   };
 
+  const handleProfileUpdate = async (updatedProfile) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+  
+      const response = await fetch(
+        getAPIUrl("/customers/update-information"),
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedProfile),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to update information");
+      }
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        setShowProfileModal(false);
+  
+        // 🔄 Re-fetch profile (same logic you already use)
+        const profileRes = await fetch(getAPIUrl("/customers/profile"), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        const profileJson = await profileRes.json();
+        if (profileJson.success) {
+          setProfileData(profileJson.user);
+        }
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError(err.message);
+    }
+  };
+  
+
   const calculateTotalAmount = (items, deliveryCharge = 0) => {
     const subtotal = items.reduce(
       (total, item) => total + item.price * item.quantity,
@@ -271,7 +404,17 @@ function Account() {
       case "account":
         return (
           <div className="account-overview">
-            <h2>Account Overview</h2>
+            <div className="header-row">
+              <h2>Account Overview</h2>
+              <div className="header-button-wrapper">
+                <button
+                  className="change-address-btn"
+                  onClick={() => setShowProfileModal(true)}
+                >
+                  Update Information
+                </button>
+              </div>
+            </div>
             <div className="user-info">
               <h3>Personal Information</h3>
               <p>
@@ -542,7 +685,13 @@ function Account() {
 
         <div className="account-content">{renderContent()}</div>
       </div>
-
+      {showProfileModal && (
+        <UpdateProfileModal
+          profileData={profileData}
+          onClose={() => setShowProfileModal(false)}
+          onSave={handleProfileUpdate}
+        />
+      )}
       {showAddressModal && (
         <div className="modal-overlay">
           <div className="modal-content">

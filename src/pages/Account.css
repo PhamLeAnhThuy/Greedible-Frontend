@@ -993,3 +993,59 @@
 .order-fee span:first-child {
   font-weight: 500;
 }
+
+.header-row {
+  display: flex;
+  /* Space out the h2 and the button wrapper */
+  justify-content: space-between;
+  /* Vertically align items in the center */
+  align-items: center; 
+}
+
+
+.address-header {
+  display: flex;
+  justify-content: space-between;
+
+  align-items: center; 
+  margin-bottom: 15px; 
+}
+
+
+.change-address-btn {
+
+  padding: 8px 15px;
+
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.form-field label {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.form-field input {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: #ff7a00;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 4px;
+}
