@@ -8,18 +8,7 @@ function AccountSidebar({ activeTab, handleTabChange, handleLogout }) {
   return (
     <div className="account-sidebar">
       <div className="sidebar-menu">
-        <button 
-          className="sidebar-item navigation"
-          onClick={() => navigate('/')}
-        >
-          Home
-        </button>
-        <button 
-          className="sidebar-item navigation"
-          onClick={() => navigate('/menu')}
-        >
-          Menu
-        </button>
+        
         <div className="sidebar-divider"></div>
         <button 
           className={`sidebar-item ${activeTab === 'account' ? 'active' : ''}`}
@@ -32,12 +21,6 @@ function AccountSidebar({ activeTab, handleTabChange, handleLogout }) {
           onClick={() => handleTabChange('order-history')}
         >
           Order History
-        </button>
-        <button 
-          className={`sidebar-item ${activeTab === 'favourite-order' ? 'active' : ''}`}
-          onClick={() => handleTabChange('favourite-order')}
-        >
-          Favourite Orders
         </button>
         <button 
           className="sidebar-item logout"
