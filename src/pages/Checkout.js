@@ -282,149 +282,64 @@ function Checkout() {
       showNotification("Please provide delivery address", "error");
       return;
     }
-    console.log("Validating userContact before payment:", userContact);
+  
     if (!userContact || userContact.trim() === "") {
       showNotification("Please provide a valid contact number", "error");
       return;
     }
-
-    // For all payment methods, just process the order and show confirmation
-    await processOrder();
-    return;
+  
+    await createOrder();
   };
+  
 
   // Process order after payment confirmation
-  const processOrder = async () => {
+  const createOrder = async () => {
     try {
       setIsProcessingPayment(true);
-      console.log("Attempting to process order...");
-
-      // Check if user is authenticated or guest
-      const authStatus = localStorage.getItem("authStatus");
-      const token = localStorage.getItem("token");
-      const isAuthenticated = authStatus === "signedIn" && token;
-
-      console.log(
-        "Order processing - Auth status:",
-        authStatus,
-        "Has token:",
-        !!token
-      );
-
-      // Prepare order data
-      const orderData = {
+  
+      const body = {
         items: cart.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           price: item.price,
         })),
         delivery_address: formatAddressForDB(userAddress),
-        delivery_distance: 5, // This should be calculated based on actual distance
+        // TODO: replace with real calculated distance when available
+        delivery_distance: 5,
         delivery_charge: deliveryCharge,
         payment_method: selectedPaymentMethod,
-        status:
-          selectedPaymentMethod === "momo" ||
-          selectedPaymentMethod === "vietcombank"
-            ? "completed"
-            : "Pending",
-        delivery_note: deliveryNote,
       };
-
-      // Add guest-specific or authenticated user-specific data
-      if (isAuthenticated) {
-        // For authenticated users, add loyalty points
-        orderData.loyalty_points_used = useLoyaltyPoints
-          ? userData?.loyaltyPoints
-          : 0;
-        orderData.loyalty_points_earned = Math.floor(calculateSubtotal() * 0.1); // 10% of subtotal
-      } else {
-        // For guest users, add contact information
-        orderData.phone_number = userContact;
-      }
-
-      // Choose the appropriate endpoint
-      const endpoint = isAuthenticated
-        ? getAPIUrl("/orders/create")
-        : getAPIUrl("/orders");
-
-      // Prepare headers
-      const headers = {
-        "Content-Type": "application/json",
-      };
-
-      // Add authorization header only for authenticated users
-      if (isAuthenticated) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      console.log("Making order request to:", endpoint);
-      console.log("Order data:", orderData);
-
-      // Create order
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(orderData),
-      });
-
+  
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        getAPIUrl(`/orders/create`),
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(data.message || "Failed to create order");
       }
-
-      setLastOrderId(data.orderId || data.sale_id || data.order_id || null);
-      console.log("Order API call successful. Response data:", data);
-
-      // If order is successful and user is authenticated, refresh user data to update loyalty points
-      if (data.success && isAuthenticated) {
-        try {
-          // Fetch updated user profile
-          const profileResponse = await fetch(getAPIUrl("/customers/profile"), {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-            if (profileData.success) {
-              // Update userData in localStorage and context
-              localStorage.setItem(
-                "userData",
-                JSON.stringify(profileData.user)
-              );
-              // Update the userData in the auth context
-              const event = new CustomEvent("userDataUpdated", {
-                detail: { userData: profileData.user },
-              });
-              window.dispatchEvent(event);
-            }
-          }
-        } catch (profileError) {
-          console.error(
-            "Error updating user profile after order:",
-            profileError
-          );
-          // Don't fail the order if profile update fails
-        }
-      }
-
-      // Show success message
+  
+      setLastOrderId(data.order_id || data.sale_id || null);
       showNotification("Order placed successfully!", "success");
-
-      // Close payment modal and show confirmation modal
-      setShowPaymentModal(false);
+  
       setShowConfirmationModal(true);
-      // Optionally, you can setShowPaymentModal(false); here, but it's not needed anymore
     } catch (error) {
-      console.error("Error processing order:", error);
-      console.log("Caught error in processOrder:", error.message);
-      showNotification(error.message || "Error processing order", "error");
+      showNotification(error.message || "Order failed", "error");
     } finally {
       setIsProcessingPayment(false);
     }
   };
+  
 
   // Function to show general notification (like success/info)
   const showNotification = (message, type) => {
