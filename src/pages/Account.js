@@ -381,7 +381,6 @@ function Account() {
     }
   };
   
-
   const calculateTotalAmount = (items, deliveryCharge = 0) => {
     const subtotal = items.reduce(
       (total, item) => total + item.price * item.quantity,
@@ -505,12 +504,25 @@ function Account() {
                           {new Date(order.sale_time).toLocaleDateString()}
                         </span>
                       </div>
-                      <div className="order-status">
-                        <span
-                          className={`status ${order.status.toLowerCase()}`}
-                        >
-                          {order.status}
-                        </span>
+                      <div className="order-status-container">
+                        <div className="order-status">
+                          <span className="status-label">Status:</span>
+                          <span
+                            className={`status ${order.status?.toLowerCase() || ""}`}
+                          >
+                            {order.status || "N/A"}
+                          </span>
+                        </div>
+                        {order.payment_status && (
+                          <div className="order-payment-status">
+                            <span className="payment-status-label">Payment:</span>
+                            <span
+                              className={`payment-status ${order.payment_status.toLowerCase()}`}
+                            >
+                              {order.payment_status}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="order-items">
@@ -560,6 +572,64 @@ function Account() {
                         <span>Delivered to:</span>
                         <span>{order.delivery_address}</span>
                       </div>
+                      {order.status &&
+                        order.status.toLowerCase() === "confirmed" && (
+                          <button
+                            className="cancel-order-btn"
+                            onClick={async () => {
+                              try {
+                                const token = localStorage.getItem("token");
+                                if (!token) {
+                                  throw new Error(
+                                    "No authentication token found"
+                                  );
+                                }
+
+                                const response = await fetch(
+                                  getAPIUrl("/orders/cancel"),
+                                  {
+                                    method: "POST",
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      orderId: order.sale_id,
+                                    }),
+                                  }
+                                );
+
+                                const data = await response.json();
+
+                                if (!response.ok || !data.success) {
+                                  throw new Error(
+                                    data.message ||
+                                      "Failed to cancel the order"
+                                  );
+                                }
+
+                                // Optionally refresh the order list to reflect updated status
+                                setRefreshOrdersTrigger((prev) => prev + 1);
+
+                                alert(
+                                  data.message ||
+                                    "Order has been cancelled successfully."
+                                );
+                              } catch (err) {
+                                console.error(
+                                  "Error cancelling order:",
+                                  err
+                                );
+                                alert(
+                                  err.message ||
+                                    "Failed to cancel the order. Please try again."
+                                );
+                              }
+                            }}
+                          >
+                            Cancel Order
+                          </button>
+                        )}
                       {order.status === "Pending" && (
                         <button
                           className="received-order-btn"

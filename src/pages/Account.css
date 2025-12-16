@@ -409,24 +409,67 @@
     font-size: 0.9em;
   }
   
-  .order-status {
+  .order-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .order-status,
+  .order-payment-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-label,
+  .payment-status-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 500;
+  }
+
+  .order-status span.status,
+  .order-payment-status span.payment-status {
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 0.9em;
     font-weight: 500;
   }
-  
+
   .status.pending {
     background: #fff3cd;
     color: #856404;
   }
-  
+
   .status.completed {
     background: #d4edda;
     color: #155724;
   }
-  
-  .status.cancelled {
+
+  .status.cancelled,
+  .status.cancel {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .status.confirmed {
+    background: #cfe2ff;
+    color: #084298;
+  }
+
+  .payment-status.paid {
+    background: #d1e7dd;
+    color: #0f5132;
+  }
+
+  .payment-status.pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .payment-status.failed {
     background: #f8d7da;
     color: #721c24;
   }
@@ -980,6 +1023,37 @@
 
   .received-order-btn:hover {
     background: #1d4420;
+  }
+
+  .cancel-order-btn {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .cancel-order-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+  }
+
+  .cancel-order-btn:active {
+    transform: translateY(0);
+    background: #bd2130;
+  }
+
+  .cancel-order-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .order-fee {
