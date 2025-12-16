@@ -124,6 +124,15 @@ function Account() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [refreshOrdersTrigger, setRefreshOrdersTrigger] = useState(0);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   // Address form states
   const [ward, setWard] = useState("");
@@ -576,8 +585,10 @@ function Account() {
                         order.status.toLowerCase() === "confirmed" && (
                           <button
                             className="cancel-order-btn"
+                            disabled={cancellingOrderId === order.sale_id}
                             onClick={async () => {
                               try {
+                                setCancellingOrderId(order.sale_id);
                                 const token = localStorage.getItem("token");
                                 if (!token) {
                                   throw new Error(
@@ -611,7 +622,7 @@ function Account() {
                                 // Optionally refresh the order list to reflect updated status
                                 setRefreshOrdersTrigger((prev) => prev + 1);
 
-                                alert(
+                                setToast(
                                   data.message ||
                                     "Order has been cancelled successfully."
                                 );
@@ -620,14 +631,18 @@ function Account() {
                                   "Error cancelling order:",
                                   err
                                 );
-                                alert(
+                                setToast(
                                   err.message ||
                                     "Failed to cancel the order. Please try again."
                                 );
+                              } finally {
+                                setCancellingOrderId(null);
                               }
                             }}
                           >
-                            Cancel Order
+                            {cancellingOrderId === order.sale_id
+                              ? "Cancelling..."
+                              : "Cancel Order"}
                           </button>
                         )}
                       {order.status === "Pending" && (
@@ -737,6 +752,7 @@ function Account() {
 
   return (
     <div className="account-page">
+      {toast && <div className="toast-notification">{toast}</div>}
       <div className="navbar menu-navbar">
         <div className="nav-links">
           <a href="/">Home</a>
