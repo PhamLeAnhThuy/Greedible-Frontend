@@ -49,7 +49,9 @@ function MenuPage() {
   const [lastName, setLastName] = useState("");
   const [contactMobile, setContactMobile] = useState("");
   const [showForgotPasswordForm, setShowForgotPasswordForm] = useState(false);
-
+  
+  // Search query for filtering recipes
+  const [searchQuery, setSearchQuery] = useState("");
   // Track Your Order popup state
   const [showTrackOrderPopup, setShowTrackOrderPopup] = useState(false);
   const [trackOrderPhone, setTrackOrderPhone] = useState("");
@@ -272,6 +274,19 @@ function MenuPage() {
     const formattedAmount = amountStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     return `${formattedAmount} vnd`;
   };
+
+  // Filter categories/items by `searchQuery` (case-insensitive)
+  const filteredCategories =
+    searchQuery.trim() === ""
+      ? categories
+      : categories
+          .map((cat) => ({
+            ...cat,
+            items: cat.items.filter((item) =>
+              item.name.toLowerCase().includes(searchQuery.toLowerCase())
+            ),
+          }))
+          .filter((cat) => cat.items && cat.items.length > 0);
   const handleCreateAccountSubmit = async (e) => {
     e.preventDefault();
     // ... (validation and logic unchanged)
@@ -369,6 +384,22 @@ function MenuPage() {
       <div className="menu-container">
         <div className="sidebar">
           <h3>Menu</h3>
+          <div className="search-section" style={{ marginBottom: "12px" }}>
+            <input
+              type="search"
+              placeholder="Search recipes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="menu-search-input"
+              style={{
+                width: "100%",
+                padding: "8px 10px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
           <div className="sort-section" style={{ marginBottom: "20px" }}>
             <label htmlFor="sortOrder">Sort by Price: </label>
             <select
@@ -392,7 +423,7 @@ function MenuPage() {
           ) : error ? (
             <div className="error">Error: {error}</div>
           ) : (
-            categories.map((category) => {
+            filteredCategories.map((category) => {
               const isCategoryOpen = categoriesOpen[category.id] !== false;
               return (
                 <div className="category" key={category.id}>
