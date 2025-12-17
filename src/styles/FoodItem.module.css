@@ -8,6 +8,7 @@
   height: 110px;
   margin-bottom: 15px;
   padding: 0;
+  position: relative;
 }
 
 .leftSection {
@@ -76,6 +77,12 @@
   font-family: 'Bubblegum Sans', cursive;
 }
 
+.addButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #999;
+}
+
 .addButton:hover {
   background-color: #c45a0f;
 }
@@ -94,4 +101,27 @@
 
 .showMoreButton:hover {
   text-decoration: underline;
+}
+
+/* Overlay for unavailable items */
+.unavailableOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(128, 128, 128, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  cursor: not-allowed;
+  pointer-events: all;
+}
+
+.unavailableText {
+  color: #ff3333;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
 }

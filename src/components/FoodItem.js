@@ -17,6 +17,9 @@ function FoodItem({ product, onAddToCart, showDetails, formattedPrice }) {
     onAddToCart(product);
   };
 
+  const isUnavailable =
+    product.status === 'unavailable' || product.is_available === false;
+
   return (
     <div className={styles.foodItem}>
       <div className={styles.leftSection}>
@@ -41,14 +44,14 @@ function FoodItem({ product, onAddToCart, showDetails, formattedPrice }) {
           <span className={styles.price}>{formattedPrice}</span>
           <button 
             className={styles.addButton}
-            disabled={product.is_available === false}
-            title={product.is_available === false ? 'Out of stock' : 'Add to cart'}
+            disabled={isUnavailable}
+            title={isUnavailable ? 'Out of stock' : 'Add to cart'}
             onClick={(e) => {
               e.stopPropagation();
-              handleAddToCart();
+              if (!isUnavailable) handleAddToCart();
             }}
           >
-            {product.is_available === false ? 'Out of stock' : 'Add to cart'}
+            {isUnavailable ? 'Out of stock' : 'Add to cart'}
           </button>
         </div>
         
@@ -56,12 +59,19 @@ function FoodItem({ product, onAddToCart, showDetails, formattedPrice }) {
           className={styles.showMoreButton}
           onClick={(e) => {
             e.stopPropagation();
-            handleShowMore();
+            if (!isUnavailable) handleShowMore();
           }}
         >
           Show more
         </button>
       </div>
+
+      {/* Overlay to show when item is unavailable - captures clicks */}
+      {isUnavailable && (
+        <div className={styles.unavailableOverlay}>
+          <span className={styles.unavailableText}>Out of stock</span>
+        </div>
+      )}
 
       {/* Thêm ShowMore component */}
       {showPopup && (
