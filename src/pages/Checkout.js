@@ -310,18 +310,34 @@ function Checkout() {
         payment_method: selectedPaymentMethod,
       };
   
+      // Determine whether user is signed in or guest
+      const authStatus = localStorage.getItem("authStatus");
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        getAPIUrl(`/orders/create`),
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        }
-      );
+
+      // If guest, use the same public API as the user-facing '/api/orders' endpoint
+      // For signed-in users keep using the authenticated endpoint
+      const endpoint = authStatus === "signedIn" ? `/orders/create` : `/orders`;
+
+      // Add phone_number to the request body (required by API)
+      const phoneNumber =
+        (authStatus === "signedIn" && (userData?.contactMobile || localStorage.getItem("userContact"))) ||
+        tempContact ||
+        localStorage.getItem("userContact") ||
+        "";
+      body.phone_number = phoneNumber;
+
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      if (authStatus === "signedIn" && token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(getAPIUrl(endpoint), {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
   
       const data = await response.json();
   
@@ -329,7 +345,10 @@ function Checkout() {
         throw new Error(data.message || "Failed to create order");
       }
   
-      setLastOrderId(data.order_id || data.sale_id || null);
+      // Support multiple possible response shapes from different endpoints
+      const returnedId =
+        data.order_id || data.sale_id || data.id || data.order?.id || data.orderId || null;
+      setLastOrderId(returnedId);
       showNotification("Order placed successfully!", "success");
   
       setShowConfirmationModal(true);
